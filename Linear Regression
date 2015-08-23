@@ -1,0 +1,137 @@
+#include<bits/stdc++.h>
+using namespace std;
+
+
+class linearRegression
+{
+    int features;
+    double alpha,lambda;
+    vector<vector<double> > dataset;
+    vector<double> output;
+
+    public:
+    vector<double> theta;
+
+    linearRegression(int f,vector<vector<double> > d)
+    {
+        features = f+1;
+        alpha = 0.003;
+        lambda = 0;
+
+        vector<double> temp;
+
+        for(int i = 0;i<d.size();i++)
+        dataset.push_back(temp);
+
+        for(int i = 0;i<d.size();i++)
+        {
+            dataset[i].push_back(1);
+            for(int j=0;j<d[i].size();j++)
+            {
+                if(j<d[i].size()-1)
+                dataset[i].push_back(d[i][j]);
+                else
+                output.push_back(d[i][j]);
+            }
+        }
+
+        for(int i = 0;i<features;i++)
+        theta.push_back(1); //random init
+
+        gradientDescent();
+    }
+
+    double h(vector<double> state,vector<double> theta)
+    {
+        double result = 0.0;
+        for(int i = 0;i<features;i++)
+            result = result + theta[i]*state[i]*1.0;
+        return result;
+    }
+
+    double cost(vector<double> theta)
+    {
+        int m = dataset.size();
+        double result = 0.0;
+
+        for(int i = 0;i<theta.size();i++)
+        result = result + theta[i]*theta[i]*1.0;
+
+        result = result * lambda; //regularization parameter
+        result = result/(2.0*m);
+
+        double sum =0.0;
+
+        for(int i=0;i<m;i++)
+        {
+            double temp = (h(dataset[i],theta)-output[i]);
+            sum = sum + temp*temp*1.0;
+        }
+
+        sum = sum/(2.0*m);
+
+        result = result + sum;
+
+        return result;
+    }
+
+    void gradientDescent()
+    {
+        int iterations = 100000;
+        int m = dataset.size();
+
+
+        vector<double> newTheta;
+        for(int i = 0;i<theta.size();i++)
+        newTheta.push_back(theta[i]);
+
+        double curr = cost(theta);
+
+        for(int itr = 0;itr<iterations;itr++)
+        {
+            for(int j = 0;j<theta.size();j++)
+            {
+                newTheta[j]  = (theta[j]*(m - alpha*lambda))/m;
+
+                double sum = 0.0;
+
+                for(int i = 0;i<m;i++)
+                {
+                    double temp = -(h(dataset[i],theta)-output[i]);
+                    sum = sum + temp*1.0*dataset[i][j];
+                }
+
+                sum = (sum*alpha);
+               // cout<<sum<<endl;
+                newTheta[j] += sum;
+            }
+
+            double next = cost(newTheta);
+
+            //cout<<next<<endl;
+            if(next<curr && curr-next>0.000001)
+            {
+                curr = next;
+                theta = newTheta;
+            }
+            else
+            break;
+
+            for(int i = 0;i<newTheta.size();i++)
+            theta[i] = newTheta[i];
+        }
+    }
+    double predict(vector<double> state)
+    {
+        vector<double> temp;
+        temp.push_back(1);
+
+        for(int i = 0;i<state.size();i++)
+        temp.push_back(state[i]);
+
+        return h(temp,theta);
+    }
+};
+
+
+
